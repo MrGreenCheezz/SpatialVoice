@@ -1,0 +1,142 @@
+.vc-spatial-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px 0 16px;
+}
+
+.vc-spatial-map {
+    --vc-spatial-grid: rgb(128 128 128 / 15%);
+
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: var(--background-secondary, #2b2d31);
+    background-image:
+        linear-gradient(var(--vc-spatial-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--vc-spatial-grid) 1px, transparent 1px);
+    background-position: center;
+    touch-action: none;
+    user-select: none;
+}
+
+.vc-spatial-user {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translate(-50%, -24px);
+    width: 0;
+}
+
+.vc-spatial-draggable .vc-spatial-avatar {
+    cursor: grab;
+}
+
+.vc-spatial-dragging .vc-spatial-avatar {
+    cursor: grabbing;
+}
+
+.vc-spatial-avatar {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    background: var(--background-tertiary, #1e1f22);
+    box-shadow: 0 0 0 3px var(--background-secondary, #2b2d31);
+    transition: box-shadow 0.1s;
+}
+
+.vc-spatial-me .vc-spatial-avatar {
+    box-shadow: 0 0 0 3px var(--brand-500, #5865f2);
+}
+
+.vc-spatial-speaking .vc-spatial-avatar {
+    box-shadow: 0 0 0 3px var(--green-360, #23a55a);
+}
+
+.vc-spatial-facing {
+    position: absolute;
+    top: -14px;
+    left: -38px;
+    width: 76px;
+    height: 76px;
+    pointer-events: none;
+}
+
+.vc-spatial-facing::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 12px solid var(--brand-500, #5865f2);
+}
+
+.vc-spatial-name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    color: var(--text-normal, #dbdee1);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 60%);
+}
+
+.vc-spatial-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand-500, #5865f2);
+}
+
+.vc-spatial-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.vc-spatial-status {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--header-primary, #f2f3f5);
+}
+
+.vc-spatial-hint,
+.vc-spatial-empty {
+    font-size: 13px;
+    color: var(--text-muted, #949ba4);
+}
+
+.vc-spatial-empty {
+    padding: 32px 0;
+    text-align: center;
+}
+
+.vc-spatial-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.vc-spatial-button {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #fff;
+    background: var(--button-secondary-background, #4e5058);
+    cursor: pointer;
+}
+
+.vc-spatial-button:hover {
+    background: var(--button-secondary-background-hover, #6d6f78);
+}

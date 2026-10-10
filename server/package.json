@@ -1,0 +1,15 @@
+{
+    "name": "spatialvoice-relay",
+    "version": "0.1.0",
+    "description": "Position sync relay for the SpatialVoice Vencord plugin",
+    "main": "server.js",
+    "license": "GPL-3.0-or-later",
+    "private": true,
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "start": "node server.js",
+        "test": "node --experimental-websocket test.js"
+    }
+}
