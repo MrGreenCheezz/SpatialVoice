@@ -1,50 +1,68 @@
-# SpatialVoice
+<div align="center">
 
-**Объёмный звук для голосовых каналов Discord.** Плагин для [Vencord](https://vencord.dev): ставишь собеседников
-в виртуальной комнате, и их голоса звучат с той стороны, где они стоят, с расстоянием становятся тише, а
-спереди и сзади слышны по-разному. Если плагин стоит у нескольких человек в одном канале, комната у них общая:
-каждый двигает себя, а позиции синхронизируются через небольшой сервер.
+# 🎧 SpatialVoice
 
-> 🇬🇧 **SpatialVoice** is a Vencord plugin that places Discord voice chat members in a virtual room and renders
-> their voices in 3D (HRTF) using the Steam Audio engine built into Discord's own voice module: no audio
-> proxying and no extra latency. Positions are synced between plugin users through a tiny zero-dependency
-> WebSocket relay. Installation steps are below (in Russian, the commands are the same).
+**3D spatial audio for Discord voice channels.**
 
-> ⚠️ Проект экспериментальный. Он опирается на внутренние API Discord, которые могут измениться с любым обновлением.
+Place people in a virtual room and hear each voice from where they stand:
+left or right, in front or behind, near or far.
 
-## Возможности
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![Vencord plugin](https://img.shields.io/badge/Vencord-plugin-a6d189.svg)](https://vencord.dev)
+![Platform: Discord desktop](https://img.shields.io/badge/platform-Discord%20desktop-5865f2.svg)
+![Status: experimental](https://img.shields.io/badge/status-experimental-orange.svg)
 
-- 🎧 **Настоящий 3D-звук (HRTF)**: направление, «спереди / сзади», затухание с расстоянием, глушение дальних голосов.
-- 🗺️ **Карта комнаты**: аватары перетаскиваются мышью, колесо поворачивает тебя, говорящие подсвечиваются.
-- 🔄 **Общая комната**: позиции синхронизируются между всеми, у кого есть плагин. Людей без плагина
-  может ставить любой участник, и их позиция тоже общая.
-- 🎚️ **Запасной режим**: если 3D-движок недоступен, работает стереопанорама с громкостью по расстоянию.
-- 🔒 **Звук никуда не уходит**: через сервер идут только координаты. ID канала сервер видит только в виде хэша.
+**English** · [Русский](README.ru.md)
 
-## Как это работает
+</div>
 
-Голос собеседников в десктопном Discord декодирует и смешивает нативный модуль `discord_voice`, до JavaScript
-звук не доходит. Зато в этот модуль уже встроен **Steam Audio**. Discord использует его для собственного тестового
-пространственного звука, а плагин просто передаёт движку координаты каждого собеседника
-(`connection.setUserPosition`). Весь звук считает сам Discord, поэтому задержка не добавляется.
-Подробности разбора внутренностей клиента в [NOTES.md](NOTES.md).
+---
+
+SpatialVoice is a [Vencord](https://vencord.dev) plugin that turns a flat voice call into a shared virtual space.
+It needs no audio routing, virtual cables or extra software: it uses the Steam Audio engine that already ships
+inside Discord's own voice module, so voices are spatialized natively, with no added latency.
+
+When several people in the same voice channel run the plugin, they share one room: everyone moves their own
+avatar, and the layout stays in sync for all of them.
+
+## ✨ Features
+
+- **True 3D audio (HRTF).** Direction, front/back cues, distance attenuation and air absorption, all rendered by
+  Discord's built-in Steam Audio engine.
+- **Interactive room map.** Drag avatars around, scroll to turn, and see who is speaking.
+- **Shared rooms.** Positions sync in real time between plugin users through a tiny self-hostable relay.
+  People without the plugin can be placed by anyone, and their positions are shared too.
+- **Zero added latency.** Audio never leaves Discord's engine. The plugin only sends it coordinates.
+- **Privacy-friendly sync.** The relay only ever sees coordinates, user IDs and a hash of the channel ID, never audio.
+- **Graceful fallback.** If 3D audio is unavailable, the plugin falls back to stereo panning with distance-based volume.
+
+## 🧠 How it works
+
+Discord's desktop client decodes and mixes voice in a native module, so the audio never reaches JavaScript
+and can't be processed by a plugin directly. However, that module embeds **Steam Audio**, which Discord uses
+for its own unreleased spatial audio feature. SpatialVoice feeds the engine a position for every participant
+(`setUserPosition`), relative to where you stand and which way you face, and the engine does the rest.
 
 ```
-┌─ Discord + Vencord ──────────────────┐        ┌─ server/ ──────────────┐
-│ SpatialVoice:                        │  WS    │ комнаты по хэшу канала │
-│  • карта комнаты                     │◄──────►│ рассылает координаты   │
-│  • позиции → движок Steam Audio      │        └────────────────────────┘
-└──────────────────────────────────────┘
+┌─ Discord + Vencord ───────────────────┐         ┌─ Relay (optional) ──────┐
+│ SpatialVoice                          │   WS    │ rooms keyed by a hashed │
+│  • room map UI                        │◄───────►│ channel ID, broadcasts  │
+│  • positions → native Steam Audio     │         │ positions only          │
+└───────────────────────────────────────┘         └─────────────────────────┘
 ```
 
-## Установка
+The reverse-engineering notes on the Discord internals involved are in [NOTES.md](NOTES.md).
 
-Понадобятся: официальный десктопный Discord, [Git](https://git-scm.com) и [Node.js](https://nodejs.org) 18 или новее.
+## 📦 Installation
 
-Vencord не умеет подгружать сторонние плагины на лету: все плагины собираются внутрь самого Vencord.
-Поэтому собираем Vencord из исходников вместе с SpatialVoice. Настройки и остальные плагины Vencord при этом сохранятся.
+**Requirements:** the official Discord desktop client, [Git](https://git-scm.com) and [Node.js](https://nodejs.org) 18+.
 
-**1. Скачай Vencord и этот репозиторий в одну папку.** Все команды ниже выполняются из этой папки.
+Vencord can't load third-party plugins at runtime: plugins are compiled into Vencord itself. So SpatialVoice is
+installed by building Vencord from source with the plugin included. Your existing Vencord settings and plugins are kept.
+
+Run all commands from the same parent folder.
+
+**1. Clone Vencord and SpatialVoice side by side**
 
 ```bash
 git clone https://github.com/Vendicated/Vencord
@@ -54,7 +72,7 @@ git clone https://github.com/Vendicated/Vencord
 git clone https://github.com/MrGreenCheezz/SpatialVoice
 ```
 
-**2. Поставь зависимости Vencord**
+**2. Install Vencord's dependencies**
 
 ```bash
 npm i -g pnpm
@@ -64,7 +82,7 @@ npm i -g pnpm
 pnpm -C Vencord install --frozen-lockfile
 ```
 
-**3. Скопируй плагин в Vencord и собери**
+**3. Add the plugin and build**
 
 ```bash
 node SpatialVoice/install-plugin.mjs Vencord
@@ -74,18 +92,16 @@ node SpatialVoice/install-plugin.mjs Vencord
 pnpm -C Vencord build
 ```
 
-Скрипт копирует `plugin/spatialVoice` в `Vencord/src/userplugins/`. Ссылка на папку вместо копии не подойдёт:
-сборщик теряет алиасы импортов Vencord.
-
-**4. Внедри сборку в Discord** (один раз, Discord перед этим закрой полностью, включая трей)
+**4. Inject the build into Discord.** This is needed only once. Fully quit Discord first, including the tray icon.
 
 ```bash
 pnpm -C Vencord inject
 ```
 
-**5.** Запусти Discord, открой **Настройки → Vencord → Плагины** и включи **SpatialVoice**.
+**5. Enable it.** Start Discord and turn on **SpatialVoice** in *Settings → Vencord → Plugins*.
 
-### Обновление
+<details>
+<summary><b>Updating</b></summary>
 
 ```bash
 git -C SpatialVoice pull
@@ -99,53 +115,58 @@ node SpatialVoice/install-plugin.mjs Vencord
 pnpm -C Vencord build
 ```
 
-После этого нажми в Discord `Ctrl+R`. Повторять `pnpm inject` не нужно.
+Then press `Ctrl+R` in Discord. There's no need to inject again.
+</details>
 
-### Удаление
+<details>
+<summary><b>Uninstalling</b></summary>
 
-Выключи плагин в настройках Vencord. Чтобы вернуть обычный Vencord без своей сборки, переустанови его
-[официальным установщиком](https://vencord.dev/download).
+Disable the plugin in Vencord's settings. To go back to stock Vencord, reinstall it with the
+[official installer](https://vencord.dev/download).
+</details>
 
-## Как пользоваться
+## 🎮 Usage
 
-1. Зайди в голосовой канал.
-2. Открой комнату одним из способов:
-   - ПКМ по каналу → **«Пространственная комната»**;
-   - команда `/spatial` в любом чате;
-   - кнопка в Vencord Toolbox.
-3. Перетаскивай аватары. Колесо мыши над картой поворачивает тебя, стрелка показывает, куда ты смотришь.
+1. Join a voice channel.
+2. Open the room in any of these ways:
+   - right-click the channel → **Пространственная комната** (*Spatial room*);
+   - type `/spatial` in any chat;
+   - use the Vencord Toolbox.
+3. Drag avatars to place people. Scroll over the map to turn. The arrow shows where you're facing.
 
-Под картой написан текущий режим: **«3D-звук (HRTF)»** или **«стереопанорама»** (запасной).
+The status line under the map shows the active mode: **3D-звук (HRTF)** or **стереопанорама** (stereo fallback).
 
-### Настройки
+### Settings
 
-| Настройка | Что делает |
+| Setting | Description |
 |---|---|
-| Сервер синхронизации | `ws://…` или `wss://…`. Пусто — комната только у тебя |
-| Размер комнаты | Размер карты в метрах |
-| Тише с расстоянием | Затухание громкости по расстоянию |
-| Расстояние без затухания | До этого расстояния громкость не падает |
-| Поглощение воздухом | Глушит высокие частоты у дальних |
-| Отражения от стен | Эхо комнаты (эксперимент, грузит процессор) |
-| Простая стереопанорама | Принудительно выключить 3D |
+| Sync server | Relay URL (`ws://…` or `wss://…`). Leave empty for a local-only room. |
+| Room size | Size of the map, in meters. |
+| Distance attenuation | Voices get quieter with distance. |
+| Min distance | Distance within which volume doesn't drop. |
+| Air absorption | Muffles high frequencies for distant voices. |
+| Reflections | Room echo (experimental, CPU-heavy). |
+| Force stereo | Use simple stereo panning instead of 3D. |
 
-## Сервер синхронизации
+> The plugin UI is currently in Russian. Translations are welcome.
 
-Без зависимостей, нужен только Node.js 18+:
+## 🌐 Shared rooms: self-hosting the relay
+
+The relay is a single file with no dependencies, so any machine with Node.js 18+ can run it:
 
 ```bash
 node server/server.js
 ```
 
-- Порт по умолчанию `8787`. Меняется переменными окружения `PORT` и `HOST`.
-- В настройках плагина у всех укажи один адрес, например `ws://IP_СЕРВЕРА:8787`.
-- Для доступа из интернета лучше поставить сервер за reverse proxy с TLS (nginx, Caddy) и указывать `wss://…`.
-- При первом подключении Vencord попросит разрешить домен сервера. После этого перезапусти Discord.
-- Тесты сервера: `cd server && npm test` (Node.js 20.10+).
+- It listens on port `8787` by default. Set `PORT` and `HOST` to change that.
+- Everyone in the group sets the same URL in the plugin settings, e.g. `ws://your-host:8787`.
+- For use over the internet, put it behind a TLS reverse proxy (nginx, Caddy) and use `wss://`.
+- On first connect, Vencord asks to allow the server's domain. Restart Discord afterwards.
+- Run the relay's tests with `npm test` in `server/` (requires Node.js 20.10+).
 
-## Если 3D не включается
+## 🛠️ Troubleshooting
 
-Если под картой «стереопанорама», открой консоль (`Ctrl+Shift+I`) и выполни:
+**The status says "стереопанорама" (stereo) instead of 3D.** Open the console (`Ctrl+Shift+I`) and run:
 
 ```js
 Vencord.Webpack.findStore("MediaEngineStore").supports("SPATIAL_AUDIO")
@@ -155,25 +176,47 @@ Vencord.Webpack.findStore("MediaEngineStore").supports("SPATIAL_AUDIO")
 Vencord.Webpack.findStore("SpatialAudioStore").getSpatialAudioStatus()
 ```
 
-- `false` в первой команде: голосовой модуль твоей версии Discord не включил 3D. Остаётся стереорежим.
-- Статус `2`: устройство вывода работает в моно, переключи наушники в стерео.
-- Статус `3` или `4`: движок или HRTF не запустился. Попробуй перезапустить Discord или сменить устройство вывода.
+| Result | Meaning |
+|---|---|
+| `supports` returns `false` | Your Discord build's voice module doesn't enable 3D audio. Stereo mode is used instead. |
+| Status `2` | Your output device is in mono. Switch it to stereo. |
+| Status `3` or `4` | The engine or HRTF failed to initialize. Restart Discord or try another output device. |
 
-## Ограничения
+**The menu item doesn't appear.** It only shows on the voice channel you're currently connected to.
 
-- Работает только в официальном десктопном Discord. Веб-версия и Vesktop используют другой звуковой движок.
-- Объёмно слышат только те, у кого стоит плагин. Остальные слышат всех как обычно, но их можно ставить в комнату.
-- Сервер не проверяет, что пользователь тот, за кого себя выдаёт. Для своей компании это нормально,
-  для публичного сервера нужна авторизация.
-- Клиентские модификации формально нарушают [условия использования Discord](https://discord.com/terms).
-  Используешь на свой страх и риск.
+## ❓ FAQ
 
-## Планы
+**Does everyone need the plugin?**
+No. Spatialization happens on the listener's side. People without the plugin hear the call normally and can
+still be placed in your room. Only plugin users hear the room in 3D.
 
-- Компаньон без Vencord через локальный RPC Discord (только стерео).
-- Вариант «бот + веб-слушалка», чтобы дать настоящий 3D тем, у кого нет мода.
-- Переход на официальное API пространственного звука для Activities, когда Discord его откроет.
+**Does it add latency?**
+No. Audio is processed by Discord's own engine exactly as usual; the plugin only updates positions.
 
-## Лицензия
+**Is my voice sent anywhere?**
+No. The relay only carries coordinates. Without a sync server configured, nothing leaves your machine.
 
-[GPL-3.0-or-later](LICENSE), как и у Vencord, внутрь которого собирается плагин.
+**Does it work in the browser or Vesktop?**
+Not yet. Those clients use a different (WebRTC-based) audio pipeline.
+
+**Is this allowed by Discord?**
+Client modifications are against [Discord's Terms of Service](https://discord.com/terms). Use at your own risk.
+
+## 🗺️ Roadmap
+
+- [ ] A companion app that works without Vencord via Discord's local RPC (stereo only)
+- [ ] A bot plus web listener, to give true 3D to people without a client mod
+- [ ] Moving to Discord's official spatial audio API for Activities once it becomes public
+- [ ] English UI and translations
+- [ ] Authentication on the relay (Discord OAuth)
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome. If something broke after a Discord update, please open an issue with
+your Discord version (*Settings → bottom of the sidebar*) and any console errors that mention `SpatialVoice`.
+
+## 📄 License
+
+[GPL-3.0-or-later](LICENSE), the same as Vencord, which the plugin is compiled into.
+
+SpatialVoice is not affiliated with or endorsed by Discord Inc. or Valve.
